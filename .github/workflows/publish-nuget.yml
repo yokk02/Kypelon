@@ -50,11 +50,13 @@ jobs:
           python-version: '3.13'
       - name: Install independent PDF validation tools
         run: python -m pip install pypdf==6.13.1 PyMuPDF==1.27.2.3
-      - name: Run publication-helper and package-inspection regression tests
+      - name: Run release-script regression tests
         run: |
           python scripts/test-trusted-publishing.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python scripts/test-package-inspection.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/test-consumer-isolation.py
       - name: Restore, build, test, validate PDFs, benchmark, pack and test consumers
         run: python scripts/trusted-publishing.py verify
       - name: Upload diagnostics when verification fails

@@ -21,6 +21,32 @@ def run(args,log=None,env=None,secret=None):
   print(text);raise RuntimeError(f"Command failed: {args[0]} (exit {result.returncode})")
  print(f"PASS: {Path(str(args[0])).name}")
  return text
+def restore_consumer(project,source,cache,log,env):
+ """Use one explicit feed and a fresh cache, excluding SDK-added feeds/fallbacks."""
+ project=Path(project).resolve();cache=Path(cache).resolve()
+ assert not cache.exists(),"Consumer package cache must be fresh"
+ config=project.parent/"NuGet.Config"
+ assert not config.exists(),"Consumer NuGet configuration must be fresh"
+ configuration=ET.Element("configuration")
+ sources=ET.SubElement(configuration,"packageSources");ET.SubElement(sources,"clear")
+ ET.SubElement(sources,"add",key="approved-release-feed",value=str(source))
+ ET.SubElement(ET.SubElement(configuration,"fallbackPackageFolders"),"clear")
+ ET.ElementTree(configuration).write(config,encoding="utf-8",xml_declaration=True)
+ # --source alone does not suppress Microsoft.NET.NuGetOfflineCache.targets.
+ run(["dotnet","restore",project,"--configfile",config,"--source",source,"--packages",cache,
+      "--no-cache","-p:NuGetAudit=false","-p:DisableImplicitLibraryPacksFolder=true",
+      "-p:DisableImplicitNuGetFallbackFolder=true","-p:RestoreAdditionalProjectSources=",
+      "-p:RestoreAdditionalProjectFallbackFolders=","-p:RestoreFallbackFolders="],log,env)
+ assets=json.loads((project.parent/"obj/project.assets.json").read_text(encoding="utf-8"))
+ restore=assets["project"]["restore"]
+ assert len(restore["sources"])==1,"Consumer restored with an unexpected additional feed"
+ actual_source=next(iter(restore["sources"]))
+ assert actual_source.rstrip("/")==str(source).rstrip("/") if str(source).startswith("https://") else Path(actual_source).resolve()==Path(source).resolve()
+ assert Path(restore["packagesPath"]).resolve()==cache,"Consumer used an unexpected package cache"
+ assert {Path(p).resolve() for p in restore["configFilePaths"]}=={config},"Consumer inherited an external NuGet configuration"
+ assert not restore.get("fallbackFolders"),"Consumer used a fallback package folder"
+ assert {Path(p).resolve() for p in assets["packageFolders"]}=={cache},"Consumer used an additional package folder"
+ return assets
 def consumer(source,label):
  import pymupdf
  from pypdf import PdfReader
@@ -29,13 +55,11 @@ def consumer(source,label):
  shutil.copytree(ROOT/"scripts/package-consumer",target,ignore=shutil.ignore_patterns("bin","obj"))
  env=os.environ.copy();env["NUGET_PACKAGES"]=str(target/"cache")
  project=target/"Consumer.csproj"
- run(["dotnet","restore",project,"--source",source,"--no-cache","-p:NuGetAudit=false"],OUT/"evidence"/f"consumer-{label}-restore.txt",env)
- assets=json.loads((target/"obj/project.assets.json").read_text(encoding="utf-8"))
+ assets=restore_consumer(project,source,Path(env["NUGET_PACKAGES"]),OUT/"evidence"/f"consumer-{label}-restore.txt",env)
+ restore=assets["project"]["restore"]
+ (OUT/"evidence"/f"consumer-{label}-restore-state.json").write_text(json.dumps({"sources":restore["sources"],"configFilePaths":restore["configFilePaths"],"packageFolders":assets["packageFolders"]},indent=2),encoding="utf-8")
+ shutil.copy2(target/"NuGet.Config",OUT/"evidence"/f"consumer-{label}-NuGet.Config")
  assert len(assets["libraries"])==6 and all(v["type"]=="package" and k.split("/")[0] in IDS and k.endswith("/"+VERSION) for k,v in assets["libraries"].items())
- assert len(assets["project"]["restore"]["sources"])==1
- actual_source=next(iter(assets["project"]["restore"]["sources"]))
- assert actual_source.rstrip("/")==source.rstrip("/") if source.startswith("https://") else Path(actual_source).resolve()==Path(source).resolve()
- assert Path(assets["project"]["restore"]["packagesPath"]).resolve()==Path(env["NUGET_PACKAGES"]).resolve()
  run(["dotnet","build",project,"-c","Release","--no-restore"],OUT/"evidence"/f"consumer-{label}-build.txt",env)
  for tfm in ("net8.0","net10.0"):
   dest=OUT/"evidence"/"consumer"/label/tfm
