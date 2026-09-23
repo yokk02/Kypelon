@@ -38,7 +38,7 @@ Windows runners are used because the real-font report regressions use installed 
 
 The workflow installs both SDK/runtime families; installing only .NET 10 is not enough to guarantee execution of net8.0 tests. Timings from hosted runners must not be treated as directly comparable to the local performance baseline.
 
-The repository README gained a candidate-status note after the original local review ZIP; CI packages need their own final artifact review. The original local release-review ZIP and package bytes remain unchanged.
+The repository README temporarily gained a candidate-status note after the original local review ZIP. Final package review removed that note before public publication; each new CI candidate still needs its own artifact review. The original local release-review ZIP and package bytes remain unchanged.
 
 ## Sources
 
@@ -69,3 +69,11 @@ The consumer now generates its own NuGet.Config, uses --configfile and a fresh -
 Five real-SDK regression tests inject an offline SDK feed, an inherited NuGet.Config, environment feeds/fallbacks and an existing cache. They verify local-only and public-only configuration, actual package provenance, rejection of an existing cache, and failure when the approved feed lacks a package that the old command found in the SDK feed/warm cache. The public-configuration test has no package reference and is not a public NuGet installation claim. All 23 release-script tests pass, and all seven real Kypelon consumer scenarios plus independent PDF validation pass on net8.0 and net10.0 with an injected extra SDK feed. The new hosted verify and public publication remain pending.
 
 References: [dotnet restore --configfile](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-restore#options), [NuGet MSBuild restore properties](https://learn.microsoft.com/en-us/nuget/reference/msbuild-targets#restore-properties). The installed Microsoft.NET.NuGetOfflineCache.targets supplied the SDK library-packs reproduction mechanism.
+
+## Final artifact review of hosted run 35868711606
+
+The verify run on fce3fef passed. Local review verified all 81 package/evidence hashes, exact package metadata and dependency order, 384 passed/0 failed/1 Thai GPOS skip per framework, zero build warnings/errors, isolated seven-scenario consumers on both frameworks, and 18 source-cluster extraction fixtures. The five PDFs have 3 business, 17 table, 1 Unicode, 1 AEFS and 4 eDocket pages. Independent pypdf 6.13.1 and PyMuPDF 1.27.2.3 parsed/rendered them; visual review covered the business/eDocket/Unicode/AEFS pages and first/middle/last table pages. Known advanced Thai typography and readers that ignore ActualText remain documented limitations.
+
+Package review found the temporary README notice saying NuGet publication was pending in all six packages. That text would be misleading in an installed public package, so it was removed and two regression cases now reject those prepublication instructions. All 25 release-script tests pass. A local repack passed all six package/symbol checks and retained identical lib DLL/XML bytes. No runtime source changed.
+
+The downloaded run remains unchanged as historical review evidence; do not publish its older README. Dispatch verify on the README-fix commit and review that candidate's new manifest hash before publishing. OIDC/public push/public installation are still pending.

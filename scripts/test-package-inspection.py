@@ -85,6 +85,14 @@ class PackageReadmeTests(unittest.TestCase):
                 result = self.inspect(README.replace("**by Konkaew**", "").replace("\n", newline).encode("utf-8"))
                 self.assertNotEqual(result.returncode, 0)
 
+    def test_prepublication_status_is_rejected(self):
+        readme=README+"\nNuGet.org publication is pending.\n"
+        self.assertNotEqual(self.inspect(readme.encode("utf-8")).returncode, 0)
+
+    def test_pending_public_installation_instructions_are_rejected(self):
+        readme=README+"\nThe versioned NuGet commands below target the pending public release.\n"
+        self.assertNotEqual(self.inspect(readme.encode("utf-8")).returncode, 0)
+
     def test_missing_readme_is_rejected(self):
         self.assertNotEqual(self.inspect(None).returncode, 0)
 

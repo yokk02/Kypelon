@@ -6,15 +6,11 @@ Native PDF & Document Engine for .NET
 
 **Alpha — 0.2.0-alpha.2 · .NET 8 and .NET 10 · MIT**
 
-**Release status:** 0.2.0-alpha.2 is a locally verified release candidate. NuGet.org publication is pending. Build from source and use the local package feed until public publication is confirmed.
-
 Kypelon.Pdf is an original C# PDF 1.7 writer and document-layout engine for business reports, invoices and tabular documents. It owns PDF serialization, graphics, text preparation and pagination. No third-party PDF-generation engine is used.
 
 This is an **alpha API**, not a promise of production safety for arbitrary untrusted input. Unicode embedding and Thai source/extraction foundations are available; advanced Thai typography is incomplete.
 
 ## Installation
-
-The versioned NuGet commands below target the pending public release. For the current source candidate, run `dotnet pack Kypelon.sln -c Release -o artifacts/packages`, then append `--source ./artifacts/packages` when installing into a consumer.
 
 ~~~sh
 dotnet add package Kypelon.Pdf --version 0.2.0-alpha.2

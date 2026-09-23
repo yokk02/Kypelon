@@ -34,6 +34,7 @@ for p in sorted(Path('artifacts/packages').glob(f'*.{expected}.nupkg')):
   # Git checkouts on Windows may use CRLF; validate text without changing package bytes.
   readme=z.read('README.md').decode('utf-8').replace('\r\n', '\n')
   assert readme.startswith('# Kypelon\n') and '**by Konkaew**' in readme, f'Invalid README branding in {p.name}'
+  assert not any(marker in readme.casefold() for marker in ('publication is pending', 'target the pending public release')), f'Prepublication instructions remain in README in {p.name}'
   assert {'pdf','document','layout','csharp','dotnet','report','unicode','thai','aspnetcore'} <= set(get('tags').split())
   for framework in ['net8.0','net10.0']:
    assert f'lib/{framework}/{name}.dll' in names
