@@ -18,3 +18,7 @@ BenchmarkDotNet.Artifacts/
 NuGet.Config
 nuget.config
 secrets.json
+
+# Python verification-script cache
+__pycache__/
+*.py[cod]

@@ -1,0 +1,136 @@
+name: Kypelon NuGet Publish
+
+"on":
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify a candidate, or publish the exact reviewed candidate
+        type: choice
+        options: [verify, publish]
+        default: verify
+        required: true
+      candidate_run_id:
+        description: Successful verify run ID (publish mode only)
+        type: string
+        required: false
+      reviewed_manifest_sha256:
+        description: SHA-256 of manifest.json from the reviewed candidate artifact
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kypelon-nuget-release
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: '1'
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_CLI_UI_LANGUAGE: en-US
+  PYTHONUTF8: '1'
+
+jobs:
+  verify:
+    if: github.repository == 'yokk02/Kypelon' && github.ref == 'refs/heads/main' && inputs.mode == 'verify'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Install independent PDF validation tools
+        run: python -m pip install pypdf==6.13.1 PyMuPDF==1.27.2.3
+      - name: Run publication-helper regression tests
+        run: python scripts/test-trusted-publishing.py
+      - name: Restore, build, test, validate PDFs, benchmark, pack and test consumers
+        run: python scripts/trusted-publishing.py verify
+      - name: Upload the verified candidate for review
+        uses: actions/upload-artifact@v7
+        with:
+          name: kypelon-nuget-candidate
+          path: artifacts/ci-release/
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    if: github.repository == 'yokk02/Kypelon' && github.ref == 'refs/heads/main' && inputs.mode == 'publish'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    environment: release
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    env:
+      CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}
+      REVIEWED_MANIFEST_SHA256: ${{ inputs.reviewed_manifest_sha256 }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Verify candidate run provenance before downloading
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ($env:CANDIDATE_RUN_ID -notmatch '^[0-9]+$') { throw 'A successful verify run ID is required.' }
+          if ($env:REVIEWED_MANIFEST_SHA256 -notmatch '^[0-9a-fA-F]{64}$') { throw 'The reviewed manifest SHA-256 is required.' }
+          $result = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:CANDIDATE_RUN_ID"
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot read candidate run metadata.' }
+          $candidate = $result | ConvertFrom-Json
+          if ($candidate.conclusion -ne 'success' -or $candidate.event -ne 'workflow_dispatch' -or
+              $candidate.path -ne '.github/workflows/publish-nuget.yml' -or
+              $candidate.head_sha -ne $env:GITHUB_SHA -or $candidate.head_branch -ne 'main') {
+            throw 'Candidate must be a successful dispatch of this workflow on the exact same main commit.'
+          }
+      - uses: actions/download-artifact@v8
+        with:
+          name: kypelon-nuget-candidate
+          path: artifacts/ci-release/
+          run-id: ${{ inputs.candidate_run_id }}
+          github-token: ${{ github.token }}
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Verify reviewed artifact hashes and dependency order
+        run: python scripts/trusted-publishing.py review
+      - name: Install independent PDF validation tools
+        run: python -m pip install pypdf==6.13.1 PyMuPDF==1.27.2.3
+      - name: Exchange GitHub OIDC for a short-lived NuGet credential
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{ vars.NUGET_USER || 'Konkaew' }}
+      - name: Publish reviewed packages and adjacent symbol packages
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: python scripts/trusted-publishing.py push
+      - name: Verify public metadata and clean nuget.org-only consumers
+        run: python scripts/trusted-publishing.py public
+      - name: Upload publication and public-consumer evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: kypelon-nuget-publication
+          path: |
+            artifacts/ci-release/push-results/
+            artifacts/ci-release/public-verification.json
+            artifacts/ci-release/evidence/consumer-public-*
+            artifacts/ci-release/evidence/consumer/public/
+          if-no-files-found: ignore
+          retention-days: 30
