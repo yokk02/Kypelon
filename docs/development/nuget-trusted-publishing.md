@@ -51,3 +51,11 @@ The repository README gained a candidate-status note after the original local re
 Local verification on 2026-09-23 passed: build with 0 warnings/errors; 384 passed, 0 failed and the single Thai GPOS skip on each target framework; 12 publication-helper tests; all 23 existing web-export scenarios plus invalid-request checks; 18 extraction fixtures; all five report PDFs parsed/rendered; all benchmark guards; six package/symbol pairs inspected; and all seven isolated package-consumer scenarios on each target framework. Manifest review, YAML and embedded PowerShell syntax checks passed. The local restore used the existing package cache because this agent cannot reach external network endpoints. The workflow uses the normal public restore on its hosted runner. Evidence is in artifacts/ci-release/evidence.
 
 Workflow dispatch, OIDC exchange, actual publication and public installation require GitHub-hosted execution. Local tests do not claim those external steps ran. Run verify after pushing this commit; the local working-tree candidate is not the hosted candidate to publish.
+
+## Windows README portability fix (2026-09-23)
+
+Hosted verify run [35859083336](https://github.com/yokk02/Kypelon/actions/runs/35859083336) reached package inspection and failed its LF-only README heading assertion. A CRLF README reproduces the same failure locally. The inspector now normalizes CRLF to LF for the branding comparison only; it does not rewrite packaged README bytes or change artifact hashing. Wrong headings, missing signatures, missing READMEs and invalid UTF-8 still fail.
+
+Six permanent package-inspection tests cover LF/CRLF and those rejection cases; all six and the existing twelve publication-helper tests pass. The inspector also passed against the six existing real packages and copies of all six with CRLF READMEs, with their symbol packages. The original release packages were preserved. The workflow runs both test suites and uploads verification diagnostics on failure, without presenting a failed run as an approved candidate.
+
+No runtime source changed. This patch requires a new verify dispatch on the new main commit; rerunning the old run uses the old code. Hosted verification, OIDC and publication after this patch have not yet run.
