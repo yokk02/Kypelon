@@ -1,0 +1,20 @@
+**/bin/
+**/obj/
+artifacts/
+BenchmarkDotNet.Artifacts/
+.vs/
+.idea/
+*.user
+*.suo
+
+# Local credentials and private configuration
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.key
+*.pem
+NuGet.Config
+nuget.config
+secrets.json

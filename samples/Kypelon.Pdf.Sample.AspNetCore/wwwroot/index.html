@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#164d52">
+  <meta name="description" content="ทดลองสร้างรายงานภาษาไทย ตารางหลายหน้า และดาวน์โหลด PDF ด้วย Kypelon">
+  <title>Kypelon — Export Studio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23164d52'/%3E%3Ctext x='9' y='29' font-size='28' fill='white' font-family='sans-serif'%3EN%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/studio.css">
+  <script src="/studio.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Kypelon Export Studio"><span class="brand-mark" aria-hidden="true">K<span>•</span></span><span>KYPELON<span class="brand-divider">/</span><span class="brand-sub">Export Studio</span></span></a>
+    <div class="topbar-right"><span class="version">ALPHA 0.1</span><span class="connection" id="connection"><i></i> กำลังเชื่อมต่อ</span></div>
+  </header>
+
+  <main>
+    <div class="page-heading">
+      <div><p class="eyebrow">DOCUMENT PLAYGROUND</p><h1>ลองสร้าง PDF ของคุณ</h1><p class="subtitle">แก้ข้อมูล ดูตัวอย่าง แล้วดาวน์โหลดรายงานที่พร้อมใช้งาน</p></div>
+      <div class="heading-note"><span class="note-line"></span> Native PDF &amp; Document Engine for .NET</div>
+    </div>
+
+    <div class="workspace">
+      <aside class="controls" aria-label="ตั้งค่ารายงาน">
+        <form id="report-form">
+          <section class="control-section">
+            <div class="section-heading"><span class="step">01</span><h2>เลือกเอกสาร</h2></div>
+            <fieldset class="template-picker"><legend class="sr-only">ประเภทเอกสาร</legend>
+              <label class="template"><input type="radio" name="template" value="business" checked><span class="template-icon" aria-hidden="true">▤</span><span><strong>รายงานธุรกิจ</strong><small>สรุปโครงการ + ตาราง</small></span><span class="radio-dot"></span></label>
+              <label class="template"><input type="radio" name="template" value="table"><span class="template-icon" aria-hidden="true">▦</span><span><strong>ตารางหลายหน้า</strong><small>ทดสอบได้ถึง 5,000 แถว</small></span><span class="radio-dot"></span></label>
+              <label class="template"><input type="radio" name="template" value="unicode"><span class="template-icon thai-icon" aria-hidden="true">ก</span><span><strong>ภาษาไทย / Unicode</strong><small>ข้อความผสมและวรรณยุกต์</small></span><span class="radio-dot"></span></label>
+              <label class="template aefs-template"><input type="radio" name="template" value="aefs"><span class="template-icon" aria-hidden="true">✉</span><span><strong>AEFS Notification</strong><small>ตามแบบอีเมลที่นำเข้า</small></span><span class="radio-dot"></span></label>
+              <label class="template aefs-template"><input type="radio" name="template" value="edocket"><span class="template-icon" aria-hidden="true">▧</span><span><strong>eDocket Summary</strong><small>4 ส่วน · Checklist / Sign-off</small></span><span class="radio-dot"></span></label>
+            </fieldset>
+          </section>
+          <section class="control-section">
+            <div class="section-heading"><span class="step">02</span><h2>ข้อมูลในรายงาน</h2></div>
+            <label class="field">ชื่อรายงาน<input id="title" name="title" maxlength="120" required value="FY26 Audit Engagement Report"></label>
+            <fieldset id="client-field" class="field-group"><legend class="sr-only">บริษัท</legend>
+            <label class="field">บริษัท / ลูกค้า<input id="client" name="client" maxlength="160" required value="บริษัท ทดสอบ จำกัด"></label>
+            </fieldset>
+            <label class="field">เนื้อหา / หมายเหตุ<textarea id="notes" name="notes" rows="4" maxlength="4000">รายงาน Audit FY26 – บริษัท ABC จำกัด
+รายงานผลการตรวจสอบ และข้อมูลพนักงาน ปีงบประมาณ 2569</textarea></label>
+            <fieldset id="aefs-fields" class="field-group" hidden disabled>
+              <legend class="sr-only">ข้อมูลคำขอ AEFS</legend>
+              <p class="template-hint">AEFS Notification · แก้ข้อมูลคำขอและลิงก์สำหรับปุ่มใน PDF</p>
+              <label class="field">ชื่อผู้รับ<input id="recipientName" name="recipientName" maxlength="120" required value="Krittanai"></label>
+              <label class="field">Request ID<input id="requestId" name="requestId" maxlength="80" required value="AEFS-2026-0042"></label>
+              <label class="field">ประเภทคำขอ<input id="requestType" name="requestType" maxlength="40" required value="eForm"></label>
+              <label class="field">ลิงก์เปิดคำขอ<input id="recordUrl" name="recordUrl" type="url" maxlength="2048" pattern="[Hh][Tt][Tt][Pp][Ss]?://.+" required value="https://aefs.example/requests/AEFS-2026-0042"><small class="field-help">เปลี่ยนลิงก์ตัวอย่างเป็นหน้าคำขอของคุณ</small></label>
+              <p class="field-help aefs-fit-note">แบบแจ้งเตือนจัดในหน้าเดียว หากข้อความยาวเกินหน้าจะมีคำแนะนำให้ปรับก่อนส่งออก</p>
+            </fieldset>
+            <fieldset id="engagement-fields" class="field-group" hidden disabled>
+              <legend class="sr-only">ข้อมูล Engagement</legend>
+              <label class="field">Engagement Name<input id="engagementName" name="engagementName" maxlength="240" required value="ABC Company Limited – FY26 Audit"></label>
+              <label class="field">Period End Date<input id="periodEndDate" name="periodEndDate" type="date" required value="2026-12-31"></label>
+            </fieldset>
+            <fieldset id="docket-fields" class="field-group" hidden disabled>
+              <legend class="sr-only">ข้อมูลรายงาน eDocket</legend>
+              <p class="template-hint">eDocket · 4 ส่วนตาม PDF ตัวอย่าง ตารางยาวจะต่อหน้าให้อัตโนมัติ</p>
+              <label class="field">eDocket ID<input name="docketId" id="docketId" maxlength="80" required value="EDK-2026-TH-004218"></label>
+              <label class="field">Engagement code<input name="engagementCode" id="engagementCode" maxlength="80" required value="TH-AUD-ARH-2026"></label>
+              <div class="field-grid">
+                <label class="field">Business unit<input name="businessUnit" id="businessUnit" maxlength="100" required value="Audit &amp; Assurance"></label>
+                <label class="field">Country<input name="country" id="country" maxlength="80" required value="Thailand"></label>
+              </div>
+              <label class="field">Engagement Partner / PIC<input name="partner" id="partner" maxlength="120" required value="Ananda Charoen"></label>
+              <label class="field">Lead Manager / MIC<input name="manager" id="manager" maxlength="120" required value="Pimchanok Wattanakul"></label>
+              <label class="field">สถานการณ์ตัวอย่าง<select name="stage" id="stage"><option value="pending">รอ PIC ลงนาม · In progress</option><option value="ready">PIC ลงนามแล้ว · Ready for eAD1</option><option value="archived">จัดเก็บเสร็จแล้ว · Archived</option></select><small class="field-help">ข้อมูลจำลองสำหรับทดสอบรูปแบบรายงาน</small></label>
+              <label class="field">Archival deadline<input name="archiveDeadline" id="archiveDeadline" type="date" required value="2026-09-30"></label>
+              <label class="field">Target repository<input name="repository" id="repository" maxlength="160" required value="EMS / Levvia (sample)"></label>
+              <label class="field">AAT ID<input name="aatId" id="aatId" maxlength="80" required value="AAT-TH-2026-004218"></label>
+              <details class="advanced-fields"><summary>ข้อมูลเอกสาร / Metadata</summary>
+                <label class="field">Generated at · UTC+07:00<input name="generatedAt" id="generatedAt" type="datetime-local" required value="2026-09-23T09:00"></label>
+                <label class="field">Source record version<input name="sourceVersion" id="sourceVersion" type="number" min="1" max="999999" required value="42"></label>
+              </details>
+            </fieldset>
+            <fieldset id="table-fields" class="field-group"><legend class="sr-only">ข้อมูลตาราง</legend>
+            <div class="field-label-row"><label id="rows-label" for="rows">จำนวนแถวในตาราง</label><span id="rows-range">0–5,000 แถว</span></div>
+            <div class="row-control"><input id="rows" name="rows" type="number" min="0" max="5000" step="1" required value="50"><div class="row-shortcuts" aria-label="จำนวนแถวที่ใช้บ่อย"><button type="button" data-rows="6" id="six-rows" hidden>6</button><button type="button" data-rows="50" class="selected">50</button><button type="button" data-rows="500">500</button><button type="button" data-rows="5000">5,000</button></div></div>
+            </fieldset>
+          </section>
+          <section class="control-section options-section">
+            <div class="section-heading"><span class="step">03</span><h2>รูปแบบการส่งออก</h2></div>
+            <div class="field-grid">
+              <label class="field">กระดาษ<select id="paper" name="paper"><option value="a4">A4</option><option value="a3">A3</option><option value="letter">Letter</option><option value="legal">Legal</option></select></label>
+              <label class="field">แนวกระดาษ<select id="orientation" name="orientation"><option value="portrait">แนวตั้ง</option><option value="landscape">แนวนอน</option></select></label>
+            </div>
+            <label class="field">ระยะขอบ<select id="margin" name="margin"><option value="24">กระชับ · 24 pt</option><option value="36" selected>มาตรฐาน · 36 pt</option><option value="48">กว้าง · 48 pt</option><option value="64">กว้างพิเศษ · 64 pt</option></select></label>
+            <label class="toggle-row"><span><strong>บีบอัดไฟล์</strong><small>ลดขนาด PDF ที่ดาวน์โหลด</small></span><input type="checkbox" id="compress" name="compress" checked><span class="toggle" aria-hidden="true"></span></label>
+            <label class="toggle-row"><span><strong>Debug layout</strong><small>แสดงเส้นขอบและระยะห่าง</small></span><input type="checkbox" id="debugLayout" name="debugLayout"><span class="toggle" aria-hidden="true"></span></label>
+          </section>
+          <div class="form-actions"><button id="generate" class="button button-primary" type="submit" disabled><span aria-hidden="true">↻</span> สร้างตัวอย่าง PDF</button><button type="button" id="reset" class="reset-button">คืนค่าตัวอย่าง</button></div>
+        </form>
+      </aside>
+
+      <section class="preview-panel" aria-label="ตัวอย่าง PDF">
+        <div class="preview-toolbar"><div class="preview-title"><span class="live-dot"></span><h2>ตัวอย่างเอกสาร</h2><span class="stale-badge" id="stale" hidden>มีการแก้ไข</span></div><button class="button button-dark" id="download" type="button" disabled><span aria-hidden="true">↓</span> ดาวน์โหลด PDF</button></div>
+        <div class="metrics" aria-label="ข้อมูลไฟล์ที่สร้างล่าสุด"><div><span>จำนวนหน้า</span><strong id="page-count">—<small> หน้า</small></strong></div><div><span>ขนาดไฟล์</span><strong id="file-size">—</strong></div><div><span>เวลาสร้างและรับไฟล์</span><strong id="elapsed">—</strong></div><div class="file-state"><span>เอกสารล่าสุด</span><strong id="file-state">ยังไม่ได้สร้าง</strong></div></div>
+        <div class="preview-stage" id="preview-stage" aria-busy="false">
+          <div class="empty-preview" id="empty-preview"><div class="empty-symbol" aria-hidden="true">PDF</div><h3>เอกสารของคุณจะอยู่ตรงนี้</h3><p>เลือกตัวอย่างและกดสร้าง PDF เพื่อเริ่มทดลอง</p></div>
+          <iframe id="pdf-preview" title="ตัวอย่างเอกสาร PDF ที่สร้างด้วย Kypelon" hidden></iframe>
+          <div class="loading-overlay" id="loading" hidden><span class="spinner" aria-hidden="true"></span><h3>กำลังสร้างรายงาน</h3><p>จัดหน้าและเตรียม PDF ของคุณ…</p><button class="cancel-button" id="cancel" type="button">ยกเลิก</button></div>
+        </div>
+        <div class="preview-footer"><p id="status" role="status" aria-live="polite">กำลังเตรียมตัวอย่างแรก…</p><a id="open-pdf" target="_blank" rel="noopener" hidden>เปิด PDF ในแท็บใหม่ ↗</a></div>
+        <div class="error-banner" id="error" role="alert" hidden></div>
+      </section>
+    </div>
+    <footer class="page-footer"><p><span class="foot-dot"></span> ภาษาไทยใช้ฟอนต์ <strong id="font-name">—</strong> <span class="foot-separator">·</span> ตัวอย่างข้อมูลสมมติ · Kypelon by Konkaew</p><p>Alpha: ตำแหน่งวรรณยุกต์ไทยบางแบบยังไม่สมบูรณ์</p></footer>
+  </main>
+</body>
+</html>

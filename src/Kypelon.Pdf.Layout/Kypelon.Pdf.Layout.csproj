@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Kypelon.Pdf.Graphics/Kypelon.Pdf.Graphics.csproj" />
+    <ProjectReference Include="../Kypelon.Pdf.Text/Kypelon.Pdf.Text.csproj" />
+  </ItemGroup>
+</Project>

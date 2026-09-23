@@ -1,0 +1,30 @@
+<Project>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12.0</LangVersion>
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Version>0.2.0-alpha.2</Version>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>$(MSBuildProjectName)</RootNamespace>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <Title>$(MSBuildProjectName)</Title>
+    <Authors>Konkaew</Authors>
+    <Product>Kypelon</Product>
+    <Description>Native C# PDF and document layout engine for .NET.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl Condition="'$(KypelonRepositoryUrl)' != ''">$(KypelonRepositoryUrl)</RepositoryUrl>
+    <RepositoryType Condition="'$(KypelonRepositoryUrl)' != ''">git</RepositoryType>
+    <PackageReleaseNotes>First public Kypelon.Pdf alpha, by Konkaew. Native PDF writer and layout engine; prepared text/shaped-line pipeline; deterministic preparation validation; reusable PreparedPdfDocument; Unicode/Thai foundation; tables and pagination; ASP.NET streaming. Alpha API: no real GSUB/GPOS, bidi or font fallback; Thai advanced typography is incomplete. Reader/Edit, signing and PDF/A or PDF/UA conformance are not implemented.</PackageReleaseNotes>
+    <PackageTags>pdf;document;layout;csharp;dotnet;report;unicode;thai;aspnetcore</PackageTags>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

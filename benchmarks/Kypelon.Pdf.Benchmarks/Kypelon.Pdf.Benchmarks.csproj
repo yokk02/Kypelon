@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DefineConstants Condition="'$(UseBenchmarkDotNet)' == 'true'">$(DefineConstants);BENCHMARKDOTNET</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Kypelon.Pdf/Kypelon.Pdf.csproj" />
+    <PackageReference Include="BenchmarkDotNet" Condition="'$(UseBenchmarkDotNet)' == 'true'" />
+    <Compile Include="../../samples/Kypelon.Pdf.Sample.Console/Reports.cs" Link="Reports.cs" />
+  </ItemGroup>
+</Project>
